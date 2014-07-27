@@ -13,19 +13,16 @@ SCC <- readRDS("Source_Classification_Code.rds")
 #           for Baltimore City?
 #           using subset to get NEI data in (fips == "24510")
             NEI.ba = subset(NEI,NEI$fips=="24510")
-#           Using aggregate by year
-            pm_sum_year.ba= aggregate(Emissions~year, data=NEI.ba, sum)
 #           specify type of source
             types=c("point", "nonpoint", "onroad", "nonroad")
-#           Using NEI.ba of Baltimore (fips == "24510")
-#           Using aggregate by year and 
-            pm_sum_year_type.balti= aggregate(Emissions~year+type,
+#           Using aggregate by year and type
+            pm_sum_year_type.ba= aggregate(Emissions~year+type,
                                     data=NEI.ba, sum)
 #           load ggplot2 library
             library(ggplot2)
 #           using gglot to show sum of PM2.5 by different year and source type
 
-            g3 = ggplot(data=pm_sum_year_type.balti, aes(x=as.character(year),
+            g3 = ggplot(data=pm_sum_year_type.ba, aes(x=as.character(year),
                          y=Emissions, fill=type)) +
                         geom_bar(stat="identity",position=position_dodge()) +
                         xlab("Year") +
