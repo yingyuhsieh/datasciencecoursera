@@ -36,7 +36,7 @@ SCC <- readRDS("Source_Classification_Code.rds")
                             labels=c("LA County","Baltimore"))
             print(g6)
 #           save to png file
-            png("plot6_pm_bcmv_sum_year.png", width=800, height=600)
+            png("plot6.png", width=800, height=600)
             print(g6)
             dev.off()
 #           Still need to calculate the ratio of increasing and decreasing
