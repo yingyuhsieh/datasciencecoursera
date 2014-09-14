@@ -1,0 +1,232 @@
+---
+title: 'Reproducible Research Assignment #1'
+date: "Sunday, September 14, 2014"
+output: html_document
+---
+
+This the assignment #1 of **Reproducible Research Assignment** for **R markdown**.
+
+
+###Loading and preprocessing the data  
+1. **Load the data:**
+    Please download dataset: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip) [52K].  
+    Extract the **repdata_data_activity.zip** (activity.csv) to your current R working directory, and then load tthe data
+    ```{r, echo=TRUE}
+    data <- read.csv("activity.csv", header=T)
+    ```
+  
+2. Process/transform the data (if necessary) into a format suitable for your analysis  
+    Currently, the transformation of the raw data is not necessary.
+  
+### What is mean total number of steps taken per day? 
+1. Make a histogram of the total number of steps taken each day  
+    - Aggregate steps by date  
+        ```{r, echo=TRUE}
+        sdata <- aggregate(steps~date, data=data, FUN=sum) 
+        ```
+  
+    - Draw histogram of the total steps taken each day 
+  
+        ```{r, echo=TRUE}
+        hist(sdata$steps, main="Histogram of Steps Taken per Day", xlab="Steps")
+        box()
+        ```
+  
+2. Calculate and report the mean and median total number of steps taken per day
+    - Calculate **mean** and **median**  
+        ```{r, echo=TRUE}
+        mn = mean(sdata$steps)     ## mean
+        mm = median(sdata$steps)   ## median
+        ```
+    - The **mean** is *`r format(mn,nsmall=2)`* and **median** is
+    *`r format(mm,nsmall=2)`*.
+
+### What is the average daily activity pattern?  
+1. Make a time series plot of the 5-minute interval and the average steps across
+all days
+    - Aggregate steps by interval  
+    - Add some faking date (since date is not important but time) for diagram
+    purpose
+    
+        ```{r, echo=TRUE}
+        ddata <- aggregate(steps~interval, data=data, FUN=mean)  
+        
+        ## fake datetime
+        l = c(strptime(c("2014/9/13"),format="%Y/%m/%d"))
+        for (i in 1:287) {
+            l = c(l, strptime(c("2014/9/13"),format="%Y/%m/%d") + 300*i)
+        }
+        ddata$time <- l  
+        ```
+    
+    - Draw diagram
+    
+        ```{r, echo=TRUE}
+        plot(ddata$time, ddata$steps, type="l",
+            main="Average Daily Activity Patter",
+            xaxt="n", xlab="Time", ylab="Average Steps")
+        axis.POSIXct(side=1, ddata$time, format="%H:%M")
+        ```
+  
+2. The maximum number of steps across all the days in the dataset of 5-minute
+step average
+    - Get maximum number of steps from dataste
+    - Retrieve the index of maximum number of steps
+    - The corresponding value of interval
+    - The corresponding time (HH:MM)
+        ```{r, echo=TRUE}  
+        max_step = max(ddata$steps)                     ## maximum number steps  
+        max_idx = which.max(ddata$steps)                ## index of max steps  
+        max_itv = ddata$interval[max_idx]               ## index of interval  
+        max_time = format(ddata$time[max_idx],"%H:%M")  ## corresponding time  
+        ```
+  The **maximum number** of average steps is *`r max_step`* and the
+  corresponding **time interval** is at *`r max_time`*. 
+    
+### Imputing missing values
+1. THe number of missing values in the dataset  
+    ```{r, echo=TRUE}
+    miss = is.na(data$steps)
+    s_miss = sum(miss)  
+    ``` 
+    
+    **ANS:** *`r s_miss`*
+    
+2. Strategy for filling in missing values in the dataset  
+    - Retrieve the index list of missing value in dataset
+        ```{r, echo=TRUE}  
+        idx_miss = grep(TRUE, miss)
+        ```  
+    - **Strategy:** use the step value of the previous day or the next day  
+        ```{r, echo=TRUE}  
+        new_data <- data    ## new dataset without NAs
+        for (i in 1:s_miss) {
+            if (is.na(new_data$steps[idx_miss[i]+288])) {
+                new_data$steps[idx_miss[i]] = new_data$steps[idx_miss[i]-288]
+            } else {
+                new_data$steps[idx_miss[i]] = new_data$steps[idx_miss[i]+288]
+            }
+        }
+        ```
+3. The new dataset (*new_data*) filling all missing values is created.  
+4. Analyze the new dataset
+    - Aggregate steps by date  
+        ```{r, echo=TRUE}  
+        new_sdata <- aggregate(steps~date, data=new_data, FUN=sum)
+        ```
+        
+    - Histogram of the total steps taken each day
+        ```{r, echo=TRUE}  
+        hist(new_sdata$steps, xlab="Steps",
+             main="Histogram of Steps Taken per Day (dataset without NAs)")
+        box()
+      
+        ```
+        
+    - Calculate **mean** and **median**  
+        ```{r, echo=TRUE}
+        new_mn = mean(new_sdata$steps)      ## mean
+        new_mm = median(new_sdata$steps)    ## median
+        ```
+        
+        In the new dataset, the **mean** is *`r format(new_mn,nsmall=2)`* and
+        **median** is *`r format(new_mm,nsmall=2)`*.
+        
+    - Use histograms of orgional dataset and new dataset to compare the differences        
+        ```{r, echo=TRUE}
+        hist(sdata$steps, main="Histogram of Steps Taken per Day", xlab="Steps",
+             col=rgb(1,0,0,0.25))
+        hist(new_sdata$steps, col=rgb(0,0,1,0.25), add=TRUE)
+        legend("topright", pch=15, legend=c("NAs", "No NAs"),
+               col=c(rgb(1,0,0,0.25), rgb(0,0,1,0.25)))
+        box()
+        ```
+        
+        New samples (8 days) are counted in the new dataset. And these samples
+        have small sum-value of steps in the day. So, the **mean** and 
+        **median** values are less than values of the original datasets
+        (ignore NAs).
+
+### Differences in activity patterns between weekdays and weekends
+1. Add a new factor variable in the dataset to indicate "weekday"" and "weekend"  
+    - Add weekday (1: Monday, 2: Tuesday,..., 7: Sunday)
+    - Convert factor with levles of "weekday" and "weekend" 
+        ```{r, echo=TRUE}
+        new_data$weekday <- format(strptime(new_data$date, "%Y-%m-%d"),"%u")
+        wkend = new_data$weekday %in% c("6","7")
+        new_data[wkend,]$weekday <- "weekend"
+        new_data[!wkend,]$weekday <- "weekday"
+        new_data$weekday = factor(new_data$weekday)     ## convert to factgor
+        ```
+  
+2. The diagrams of the average 5-minute steps in weekday and weekend
+    - Aggregate steps by interval for "weekday"" and "weekend"
+        ```{r, echo=TRUE}
+        ## aggregate for weekday daily pattern
+        week_ddata <- aggregate(steps~interval,
+                                data=subset(new_data, weekday=="weekday"),
+                                FUN=mean)
+        
+        ## aggregate for weekend daily pattern
+        wend_ddata <- aggregate(steps~interval, 
+                                data=subset(new_data, weekday=="weekend"),
+                                FUN=mean)
+    ```
+
+    - Merge datasets of different daily patterns
+    - Add some faking date (since date is not important but time) for diagram
+    purpose
+        ```{r, echo=TRUE}
+        new_ddata <- merge(week_ddata, wend_ddata,by="interval")
+        new_ddata$time <- l
+        ```
+
+    - Diagrams of weekday and weekend
+        ```{r, echo=TRUE}    
+        ## weekday
+        plot(new_ddata$time, new_ddata$steps.x, type="l", 
+             main="Average Daily Activity Patter", xaxt="n", xlab="Time",
+             col=rgb(1,0,0,0.5))
+        
+        ## weekday
+        points(new_ddata$time, new_ddata$steps.y, type="l", col=rgb(0,0,1,0.5))
+        
+        ## axis and legend
+        axis.POSIXct(side=1, new_ddata$time, format="%H:%M")
+        legend("topright", pch=15, legend=c("Weekday", "Weekend"),
+               col=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5)))
+    ```
+
+    - Diagram of weekday and weekend with data filtering
+        ```{r, echo=TRUE}  
+        ## filter
+        f = c(0.03125,0.15625,0.31250,0.31250,0.15625,0.03125)
+        
+        ## weekday
+        plot(new_ddata$time, filter(new_ddata$steps.x,filter=f), type="l", 
+             main="Average Daily Activity Patter (with filter)",
+             xaxt="n", xlab="Time", col=rgb(1,0,0,0.5), lwd=2)
+
+        ## weekend
+        points(new_ddata$time, filter(new_ddata$steps.y,filter=f), type="l",
+               col=rgb(0,0,1,0.5), lwd=2)
+        
+        ## axis and legend
+        axis.POSIXct(side=1, new_ddata$time, format="%H:%M")               
+        legend("topright", pch=15, legend=c("Weekday", "Weekend"),
+               col=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5)))       
+        ```  
+    
+        
+
+
+
+
+
+    
+    
+
+  
+  
+  
+  
