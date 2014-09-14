@@ -1,8 +1,7 @@
----
-title: 'Reproducible Research Assignment #1'
-date: "Sunday, September 14, 2014"
-output: html_document
----
+Reproducible Research Assignment #1
+====
+Date: Sunday, September 14, 2014
+----
 
 This the assignment #1 of **Reproducible Research Assignment** for **R markdown**.
 
@@ -216,17 +215,3 @@ step average
         legend("topright", pch=15, legend=c("Weekday", "Weekend"),
                col=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5)))       
         ```  
-    
-        
-
-
-
-
-
-    
-    
-
-  
-  
-  
-  
