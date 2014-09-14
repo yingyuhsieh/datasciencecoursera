@@ -1,8 +1,7 @@
----
-title: 'Reproducible Research Assignment #1'
-date: "Sunday, September 14, 2014"
-output: html_document
----
+Reproducible Research Assignment #1
+====
+Date: Sunday, September 14, 2014
+----
 
 This the assignment #1 of **Reproducible Research Assignment** for **R markdown**.
 
@@ -246,17 +245,3 @@ step average
         ```
         
         ![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19.png) 
-    
-        
-
-
-
-
-
-    
-    
-
-  
-  
-  
-  
