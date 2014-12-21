@@ -48,7 +48,6 @@ The goal of the project is to predict "classe" variable in the training set, cre
         h_c_i <- findCorrelation(M, 0.9)
         df <- df[,-h_c_i]
     ```  
-    
     - Define training samples and testing samples for modeling with simple cross-validation
     ``` {r setup_training_testing, echo=TRUE, cache=TRUE}
         set.seed(20141221)
@@ -56,7 +55,6 @@ The goal of the project is to predict "classe" variable in the training set, cre
         cv_training <- df[index_cross_training,]
         cv_testing <- df[-index_cross_training,]
     ```  
-    
     - Filtering pml_testing
     ```{r filter_data_2, echo=TRUE, cach=TRUE}
         testing <- pml_testing[,-c(1,2,3,4,5,6)]
@@ -73,7 +71,6 @@ The goal of the project is to predict "classe" variable in the training set, cre
     set.seed(20141221)
     modFit1 <- train(classe~., method="rpart", data=cv_training)
     ```  
-    
     - Classification tree and accuracy
     ```{r model_1_tree, echo=TRUE, cach=TRUE}
         fancyRpartPlot(modFit1$finalModel)
@@ -81,7 +78,6 @@ The goal of the project is to predict "classe" variable in the training set, cre
         model_1_accuracy <- max(modFit1$results$Accuracy)
     ```  
     The accuracy of the model is `r sprintf("%.2f %%",  100*max(model_1_accuracy))`
-    
     - Cross Validation
     ```{r model_1_cva, echo=TRUE, cach=TRUE}
         model_1_prediction <- predict(modFit1, cv_testing)
