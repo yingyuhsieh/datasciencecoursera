@@ -28,6 +28,7 @@ The goal of the project is to predict "classe" variable in the training set, cre
   
 3. **Remove unnecessary columns and highly correlated columns**  
     - Filtering pml_training
+<<<<<<< HEAD
         ```{r filter_data_1, echo=TRUE, cache=TRUE}
             ## remove index (1), username (2), timestamp (3,4,5), new_window (6)
             df <- pml_training[, -c(1,2,3,4,5,6)]
@@ -55,6 +56,35 @@ The goal of the project is to predict "classe" variable in the training set, cre
             cv_training <- df[index_cross_training,]
             cv_testing <- df[-index_cross_training,]
         ```  
+=======
+    ```{r filter_data_1, echo=TRUE, cache=TRUE}
+        ## remove index (1), username (2), timestamp (3,4,5), new_window (6)
+        df <- pml_training[, -c(1,2,3,4,5,6)]
+    
+        ## remove columns with NAs and empty-components greater than 1/10 of row number
+        i <- 1:ncol(df)
+        v <- sapply(i, function(x){
+            (length(which(is.na(df[,x]))) > nrow(df)/10) || (sum(df[,x]=="") > nrow(df)/10)
+        })
+        df <- df[, !v]
+    
+        ## set classe as factor
+        df$classe <- as.factor(df$classe)
+    
+        ## remove high correlated columns
+        c_i <- which(names(df)=="classe")
+        M <- abs(cor(df[,-c_i]))
+        h_c_i <- findCorrelation(M, 0.9)
+        df <- df[,-h_c_i]
+    ```  
+    - Define training samples and testing samples for modeling with simple cross-validation
+    ``` {r setup_training_testing, echo=TRUE, cache=TRUE}
+        set.seed(20141221)
+        index_cross_training <- createDataPartition(df$classe, p=0.8, list=F)
+        cv_training <- df[index_cross_training,]
+        cv_testing <- df[-index_cross_training,]
+    ```  
+>>>>>>> origin/master
     - Filtering pml_testing
         ```{r filter_data_2, echo=TRUE, cach=TRUE}
             testing <- pml_testing[,-c(1,2,3,4,5,6)]
@@ -66,6 +96,7 @@ The goal of the project is to predict "classe" variable in the training set, cre
         ```  
 4. **Use Recursive Partitioning and Regression Trees (rpart) model**
     - Build training model
+<<<<<<< HEAD
         ```{r model_1, echo=TRUE, cach=TRUE}
         set.seed(20141221)
         modFit1 <- train(classe~., method="rpart", data=cv_training)
@@ -77,6 +108,19 @@ The goal of the project is to predict "classe" variable in the training set, cre
             model_1_accuracy <- max(modFit1$results$Accuracy)
         ```  
     The accuracy of the model is `r sprintf("%.2f %%",  100*max(model_1_accuracy))`  
+=======
+    ```{r model_1, echo=TRUE, cach=TRUE}
+    set.seed(20141221)
+    modFit1 <- train(classe~., method="rpart", data=cv_training)
+    ```  
+    - Classification tree and accuracy
+    ```{r model_1_tree, echo=TRUE, cach=TRUE}
+        fancyRpartPlot(modFit1$finalModel)
+        ## accurcty of the model
+        model_1_accuracy <- max(modFit1$results$Accuracy)
+    ```  
+    The accuracy of the model is `r sprintf("%.2f %%",  100*max(model_1_accuracy))`
+>>>>>>> origin/master
     - Cross Validation
         ```{r model_1_cva, echo=TRUE, cach=TRUE}
             model_1_prediction <- predict(modFit1, cv_testing)
